@@ -1,10 +1,10 @@
 import scrapy, json, requests
 
+from .gh import GithubOperation
+
 from .custom_settings import request_headers
 
 from .db import MySql
-
-# TODO: Add GitHub support
 
 class DockerHubSpider(scrapy.Spider):
 
@@ -13,6 +13,8 @@ class DockerHubSpider(scrapy.Spider):
     custom_settings = request_headers
 
     sql = MySql()
+
+    gh = GithubOperation()
 
     long_description_url = [
         'https://hub.docker.com/v2/repositories/',
@@ -29,7 +31,7 @@ class DockerHubSpider(scrapy.Spider):
 
     def start_requests(self):
 
-        self.sql.connect()
+        # self.sql.connect()
 
         official_image_url_list = [
             self.official_image_url + str(page + 1) for page in range(7)
@@ -86,8 +88,9 @@ class DockerHubSpider(scrapy.Spider):
             image_info_need_inserted = [
                 image_info["name"],
                 image_info["short_description"],
-                "data/" + name,
-                image_info["filter_type"]
+                "dockerhub_data/" + name,
+                image_info["filter_type"],
+                "github_data/" + name,
             ]
             sql = (f'INSERT INTO image_info VALUES('
                    f'"{image_info_need_inserted[0]}",'
@@ -132,11 +135,19 @@ class DockerHubSpider(scrapy.Spider):
         else:
             temp_filename = response_json["name"]
 
-        filename = f'data/{temp_filename}.md'
+        search_repository = f'{temp_filename}'
+        filename = f'dockerhub_data/{temp_filename}.md'
 
         with open(filename, 'w') as f:
             if response_json["full_description"] != None:
                 f.write(response_json["full_description"])
             else:
                 f.write("")
+            f.close()
+
+        # Now, it needs to search from the GitHub
+        github_readme = self.gh.download_readme(search_repository)
+        filename = f'github_data/{temp_filename}.md'
+        with open(filename, 'w') as f:
+            f.write(github_readme)
             f.close()

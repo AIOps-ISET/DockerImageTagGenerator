@@ -3,7 +3,7 @@
 Crawler is aimed at pulling short description
 and full description of different kinds of images from DockerHub.
 When the DockerHub's information is not enough, it will find
-information by the GitHub API
+information by the GitHub API.
 
 This project is based on Scrapy.
 
@@ -35,3 +35,8 @@ CREATE TABLE image_info (
     PRIMARY KEY ( name )
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 ```
+
+## GitHub
+
+This project uses `PyGithub` for find more information for image long
+description, the idea is simple.
