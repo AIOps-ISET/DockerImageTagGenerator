@@ -1,0 +1,5 @@
+bin/
+data/
+*.jar
+.cache
+tools/
